@@ -41,36 +41,25 @@ read opt;
 case $opt in
      [Bb]* )
          clear
-         type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
-         type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
-         mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_";
-         uname -a > System_Information ;
-         tar -czvf etc.tar.gz /etc ;
-         cat /etc/hostname > hostname_$(uname -n) ;
-         cat /etc/resolv.conf > resolv.conf ;
-         ip addr > ip_addr_before_reboot ;
-         ip route > ip_route_before_reboot ;
-         if [ -x /usr/sbin/iptables-save ]; then
-             /usr/sbin/iptables-save -f iptables-save_V4_before_reboot
-         else
-             echo "Your system does not have iptables-save"
-         fi
-         if [ -x /usr/sbin/ip6tables-save ]; then
-             /usr/sbin/ip6tables-save -f iptables-save_V6_before_reboot
-         else
-             echo "Your system does not have ip6tables-save"
-         fi
-         ps -efww > Process_running_before_reboot ;
-         clear ;
+         mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_" && echo "Backup directory creation --> Complete";
+         uname -a > System_Information && echo "Hostname save --> Complete";
+         tar -czf $(uname -n)_etc.tar.gz /etc && echo "Backup of entire /etc --> Complete" || echo "This server does not have Tar installed";
+         cat /etc/hostname > hostname_$(uname -n) && echo "Save of Hostname --> Complete";
+         cat /etc/resolv.conf > resolv.conf && echo "Save of resolv.conf --> Complete";
+         ip addr > ip_addr_before_reboot && echo "Save of IP config --> Complete";
+         ip route > ip_route_before_reboot && echo "Save of IP route config --> Complete";
+         iptables-save -f iptables-save_V4_before_reboot && echo "Backup of Iptables v4 Rules --> Complete" || echo "This server does not have iptables-save";
+         ip6tables-save -f iptables-save_V6_before_reboot && echo "Backup of Iptables v6 Rules --> Complete" || echo "Your system does not have ip6tables-save";
+         ps -efww > Process_running_before_reboot && echo "Save of Running process before reboot --> Complete" ;
          while true; do
-		 read -p "Do you wish to restart this server now (Y/N) ? " yn
+        		 read -p "Do you wish to reboot this server now (Y/N) ? " yn
              case $yn in
-             [Yy]* ) /usr/sbin/shutdown -r now;;
-             [Nn]* ) exit;;
-             * ) echo "Please answer yes or no.";;
+             [Yy]* ) /usr/sbin/shutdown -r now;
+             [Nn]* ) clear && exit;
+             * ) echo "Please answer yes or no.";
              esac
          done
-         exit;;
+         exit;
      [Pp]* )
         clear
         rm -Rf /root/net4all-PR-*/
