@@ -1,32 +1,7 @@
-:#!/bin/bash
-#    .clooolc
-#    :ooooooo.                                                                                  .:c
-#    .ooooooo                                                                               'cllool
-#      .:c;.   .::cc::,.                                                                   .loooool
-#             cccccccccc:;.                                                                .loooool
-#            '::::::ccccccc:::,.                                                           .loooool
-#            ':::::;',:::::ccccc:.                        ;ooooooo,            looooooooooooooooooooooooo,   'oooooooo:           ':::;;;
-#             ::::::::  .':::::::::::;.                     ooooooo'         .ooooooooooooooooooooooooooooo.   loooooooc        ;:::::,
-#              .:::::::     ;:::::::::::;,                  .ooooooo.       .looooooocccccccoooooooc:::::::c.   ;oooooooo.    .::::::;
-#                .;:::::,       .;:::::::::::;               .ooooooo;      ooooooo:       .loooool               coooooool.    ,:::;
-#                 .;;;;;;,         .,:::::::::::'             :ooooooo.    ,ooooooc        .loooool               .ooooooooo.    ::,
-#                   ';;;;;;             .::::::::::.           .oooooo:   .oooooo.         .loooool                 'oooooool'
-#                    ';;;;;.               ';;;:::::            'oooooo, .oooooo:          .loooool                   oooooooo:
-#                    .,,,,,.                .,;;;;;;              looooooooooooo           .loooool                    ;oooooooo.
-#                   .,,,,,,              .,;;;;;;;;'              ,oooooooooooo             coooooo                   ;oooooooooo.
-#                  ',,,,,,.          ';,;;,;;;;;;,.                ,ooooooooo;              'oooooo;                ,looooooooooool.
-#                 ',,,,,,.        ';,,,,,,,,,,'                     ;ooooooo:                :oooooo;              coooooooloooooooo,
-#                '''''''.      .,',,,,,,,,,'.                        ;oooool                  cooooooo;           ;ooooooo' 'oooooooo.
-#             .,''''''.   .',,''',,,,,,.                              ;oooo.                   'oooooooollc.    'ooooooo;     looooooo;
-#            .'''''''. .,'''''''''''.                                  ooo'                     .loooooooc     cooooooo:       ;oooooooo.
-#            .......'''''''''''.                                        c                           cooo.    .oooooooo;         .ooooooool
-#            ................                                                                               .llllllll.           'clllllll;
-#             ..........
-#                .....
-#
-# author: Frédéric Fokan
+#!/bin/bash
+# author: Frederic Fokan
 # date: 05.06.2024
-# last update: 12.06.2024
+# last update: 14.06.2024
 clear
 echo ""
 echo ""
@@ -47,14 +22,14 @@ echo ""
 echo ""
 echo "###################################################################################################"
 echo "#                                                                                                 #"
-echo "# RebootProof scripts for Linux Servers                                                           #"
+echo "# RebootProof scripts for Linux Servers (must be run as root)                                     #"
 echo "#                                                                                                 #"
 echo "###################################################################################################"
 echo "#                                                                                                 #"
 echo "# Please select any of the following activities :                                                 #"
 echo "#                                                                                                 #"
 echo "#                                                                                                 #"
-echo "# [B]efore reboot (will perform a full backup of /etc & save of eventual config in memmory)       #"
+echo "# [B]efore reboot (will perform a full backup of /etc & save of eventual configs in memory)       #"
 echo "#                                                                                                 #"
 echo "# [P]ost reboot  (!!! reapplying that part will erase any previous post reboot data's)            #"
 echo "#                                                                                                 #"
@@ -66,8 +41,8 @@ read opt;
 case $opt in
      [Bb]* )
          clear
-	 type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
-	 type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
+	       type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
+	       type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
          mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_";
          uname -a > System_Information ;
          tar -czvf etc.tar.gz /etc ;
@@ -75,17 +50,16 @@ case $opt in
          cat /etc/resolv.conf > resolv.conf ;
          ip addr > ip_addr_before_reboot ;
          ip route > ip_route_before_reboot ;
-         if exists iptables-save; then /usr/sbin/iptables-save  > /root/net4all-BR-*/iptables-save_V4_before_reboot 
+         if [ -x /usr/sbin/iptables-save ]; then
+             /usr/sbin/iptables-save -f iptables-save_V4_before_reboot
          else
-           echo 'Your system does not have iptables-save'
+             echo "Your system does not have iptables-save"
          fi
-#         /usr/sbin/iptables-save  > iptables-save_V4_before_reboot ;
-         if exists ip6tables-save; then
-           /usr/sbin/ip6tables-save  > /root/net4all-BR-*/ip6tables-save_V6_before_reboot
+         if [ -x /usr/sbin/ip6tables-save ]; then
+             /usr/sbin/ip6tables-save -f iptables-save_V6_before_reboot
          else
-           echo 'Your system does not have ip6tables-save'
+             echo "Your system does not have ip6tables-save"
          fi
-#         /usr/sbin/ip6tables-save  > ip6tables-save_V6_before_reboot ;
          ps -efww > Process_running_before_reboot ;
          clear ;
          while true; do
