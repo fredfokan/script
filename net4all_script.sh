@@ -37,7 +37,7 @@ echo "#                                                                         
 echo "# Please select any of the following activities :                                                 #"
 echo "#                                                                                                 #"
 echo "#                                                                                                 #"
-echo "# [B]efore reboot (will perform a full backup of /etc & save of eventual config in memmory)       #"
+echo "# [B]efore reboot (will perform a full backup of /etc & save of eventual config in memory)        #"
 echo "#                                                                                                 #"
 echo "# [P]ost reboot  (!!! reapplying that part will erase any previous post reboot data's)            #"
 echo "#                                                                                                 #"
@@ -58,8 +58,7 @@ case $opt in
          cat /etc/resolv.conf > resolv.conf ;
          ip addr > ip_addr_before_reboot ;
          ip route > ip_route_before_reboot ;
-         if exists iptables-save; then
-           /usr/sbin/iptables-save  > /root/net4all-BR-*/iptables-save_V4_before_reboot
+         if exists iptables-save; then /usr/sbin/iptables-save  > /root/net4all-BR-*/iptables-save_V4_before_reboot 
          else
            echo 'Your system does not have iptables-save'
          fi
