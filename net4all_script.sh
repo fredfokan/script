@@ -41,8 +41,8 @@ read opt;
 case $opt in
      [Bb]* )
          clear
-	       type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
-	       type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
+         type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
+         type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
          mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_";
          uname -a > System_Information ;
          tar -czvf etc.tar.gz /etc ;
