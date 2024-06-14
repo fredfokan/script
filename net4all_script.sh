@@ -1,4 +1,4 @@
-#!/bin/bash
+:#!/bin/bash
 #    .clooolc
 #    :ooooooo.                                                                                  .:c
 #    .ooooooo                                                                               'cllool
@@ -26,23 +26,31 @@
 #
 # author: Frédéric Fokan
 # date: 05.06.2024
-# last update: 14.01.2020
+# last update: 12.06.2024
 /usr/bin/clear
 /usr/bin/echo "###################################################################################################"
-/usr/bin/echo "# Bash Script for performing backups of sensible configs for RebootProof of Net4all Linux Servers #"
+/usr/bin/echo "#                                                                                                 #"
+/usr/bin/echo "# RebootProof Net4all scripts for Linux Servers                                                   #"
+/usr/bin/echo "#                                                                                                 #"
 /usr/bin/echo "###################################################################################################"
 /usr/bin/echo "#                                                                                                 #"
-/usr/bin/echo "# Please select any of the activities below :                                                     #"
+/usr/bin/echo "# Please select any of the following activities :                                                 #"
 /usr/bin/echo "#                                                                                                 #"
-/usr/bin/echo "# [b]efore reboot (will perform a backup of config in memory and the entire /etc )                #"
-/usr/bin/echo "# [p]ost reboot  (note that reapplying that part will erase any previous post reboot data's)      #"
-/usr/bin/echo "# [c]compare discrepency between configs before & after reboot                                    #"
+/usr/bin/echo "#                                                                                                 #"
+/usr/bin/echo "# [B]efore reboot (will perform a full backup of /etc & save of eventual config in memmory)       #"
+/usr/bin/echo "#                                                                                                 #"
+/usr/bin/echo "# [P]ost reboot  (!!! reapplying that part will erase any previous post reboot data's)            #"
+/usr/bin/echo "#                                                                                                 #"
+/usr/bin/echo "# [C]compare discrepency between configs before & after reboot !                                  #"
+/usr/bin/echo "#                                                                                                 #"
 /usr/bin/echo "#                                                                                                 #"
 /usr/bin/echo "###################################################################################################"
 read opt;
 case $opt in
      [Bb]* )
          /usr/bin/clear
+	 type tar >/dev/null 2>&1 || { echo >&2 "tar but is not installed.  Aborting."; exit 1; }
+	 type pstree >/dev/null 2>&1 || { echo >&2 "pstree is not installed.  Aborting."; exit 1; }
          /usr/bin/mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_";
          /usr/bin/uname -a > System_Information ;
          /usr/bin/tar -czvf etc.tar.gz /etc ;
@@ -50,12 +58,22 @@ case $opt in
          /usr/bin/cat /etc/resolv.conf > resolv.conf ;
          /usr/bin/ip addr > ip_addr_before_reboot ;
          /usr/bin/ip route > ip_route_before_reboot ;
-         /usr/sbin/iptables-save  > iptables-save_V4_before_reboot ;
-         /usr/sbin/ip6tables-save  > ip6tables-save_V6_before_reboot ;
-         /usr/bin/ps ax -o pid,comm > Process_running_before_reboot ;
+         if exists iptables-save; then
+           /usr/sbin/iptables-save  > /root/net4all-BR-*/iptables-save_V4_before_reboot
+         else
+           echo 'Your system does not have iptables-save'
+         fi
+#         /usr/sbin/iptables-save  > iptables-save_V4_before_reboot ;
+         if exists ip6tables-save; then
+           /usr/sbin/ip6tables-save  > /root/net4all-BR-*/ip6tables-save_V6_before_reboot
+         else
+           echo 'Your system does not have ip6tables-save'
+         fi
+#         /usr/sbin/ip6tables-save  > ip6tables-save_V6_before_reboot ;
+         /usr/bin/ps -efww > Process_running_before_reboot ;
          /usr/bin/clear ;
          while true; do
-             read -p "Do you wish to restart this server now ? " yn
+		 read -p "Do you wish to restart this server now (Y/N) ? " yn
              case $yn in
              [Yy]* ) /usr/sbin/shutdown -r now;;
              [Nn]* ) exit;;
@@ -74,13 +92,15 @@ case $opt in
         /usr/bin/ip route > ip_route_post_reboot ;
         /usr/sbin/iptables-save  > iptables-save_V4_post_reboot ;
         /usr/sbin/ip6tables-save  > ip6tables-save_V6_post_reboot ;
-        /usr/bin/ps ax -o pid,comm > Process_running_post_reboot ;
+        /usr/bin/ps -efww > Process_running_post_reboot ;
         exit ;;
      [Cc]* ) 
         /usr/bin/clear
         /usr/bin/echo ""
         /usr/bin/echo "###################################################################################################"
+        /usr/bin/echo "#                                                                                                 #"
         /usr/bin/echo "# Before                                                     < >  After                           #"
+        /usr/bin/echo "#                                                                                                 #"
         /usr/bin/echo "###################################################################################################"
         /usr/bin/echo ""
         /usr/bin/echo "Making diff of System Information (Output of uname -a)"
