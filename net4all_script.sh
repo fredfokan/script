@@ -56,7 +56,8 @@ case $opt in
          ip route > ip_route_before_reboot && echo -e "$White Save of IP route config --> $Green Complete";
          iptables-save -f iptables-save_V4_before_reboot && echo -e "$White Backup of Iptables v4 Rules --> $Green Complete" || echo -e "$Red This server does not have iptables-save";
          ip6tables-save -f iptables-save_V6_before_reboot && echo -e "$White Backup of Iptables v6 Rules --> $Green Complete" || echo -e "$Red Your system does not have ip6tables-save";
-         ps -efww > Process_running_before_reboot && echo -e "$White Save of Running process before reboot --> $Green Complete" ;
+         ps -efww > process_running_before_reboot && echo -e "$White Save of running process before reboot --> $Green Complete";
+         ps -ef --no-headers | awk '{print $8}' | sort | uniq > process_running_min && echo -e "$White Save of minimalist list of running process before reboot --> $Green Complete";
          echo -e "$White"
          echo ""
          echo ""
@@ -82,7 +83,8 @@ case $opt in
         ip route > ip_route_before_reboot && echo -e "$White Save of IP route config --> $Green Complete";
         iptables-save -f iptables-save_V4_post_reboot && echo -e "$White Backup of Iptables v4 Rules --> $Green Complete" || echo -e "$Red This server does not have iptables-save";
         ip6tables-save -f iptables-save_V6_post_reboot && echo -e "$White Backup of Iptables v6 Rules --> $Green Complete" || echo -e "$Red Your system does not have ip6tables-save";
-        ps -efww > Process_running_post_reboot && echo -e "$White Save of Running process post reboot --> $Green Complete" ;
+        ps -efww > process_running_post_reboot && echo -e "$White Save of running process post reboot --> $Green Complete";
+        ps -ef --no-headers | awk '{print $8}' | sort | uniq > process_running_min && echo -e "$White Save of minimalist list of running process after reboot --> $Green Complete";
         exit ;;
      [Cc]* ) 
         clear
@@ -147,7 +149,7 @@ case $opt in
         echo "                                                              |                                                                   "
         echo ""
         echo "Making diff of running process"
-        diff --side-by-side --suppress-common-lines /root/net4all-BR-*/Process_running_before_reboot /root/net4all-PR-*/Process_running_post_reboot 2>/dev/null
+        diff --side-by-side --suppress-common-lines /root/net4all-BR-*/process_running_min /root/net4all-PR-*/process_running_min 2>/dev/null
         echo "                                                              |                                                                   "
         echo "                                                              |                                                                   "
         echo ""
