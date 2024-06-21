@@ -47,9 +47,9 @@ case $opt in
          clear
          mkdir /root/net4all-BR-$(date +%Y%m%d_%H%M%S) && cd "$_" && echo -e "$White Before reboot directory creation --> $Green Complete";
          uname -a > System_Information && echo -e "$White Hostname save --> $Green Complete";
-         mount > Mount_information && echo -e "$White Mount save --> $Green Complete";
+         mount | sort > Mount_information && echo -e "$White Mount save --> $Green Complete";
          df -H > Disk_space_used && echo -e "$White Disk space usage --> $Green Complete";
-	       tar -czf $(uname -n)_etc.tar.gz /etc 2>/dev/null && echo -e "$White Backup of entire /etc --> $Green Complete" || echo -e "$Red This server does not have Tar installed";
+         tar -czf $(uname -n)_etc.tar.gz /etc 2>/dev/null && echo -e "$White Backup of entire /etc --> $Green Complete" || echo -e "$Red This server does not have Tar installed";
          cat /etc/hostname > hostname_$(uname -n) && echo -e "$White Save of Hostname --> $Green Complete";
          cat /etc/resolv.conf > resolv.conf && echo -e "$White Save of resolv.conf --> $Green Complete";
          ip addr > ip_addr_before_reboot && echo -e "$White Save of IP config --> $Green Complete";
@@ -60,11 +60,11 @@ case $opt in
          echo -e "$White"
          echo ""
          echo ""
-	 while true; do
+         while true; do
              read -p "Do you wish to restart this server now ? " yn
              case $yn in
              [Yy]* ) /usr/sbin/shutdown -r now;;
-             [Nn]* ) exit && clear;;
+             [Nn]* ) exit;;
              * ) echo "Please answer yes or no.";;
              esac
          done
@@ -75,7 +75,7 @@ case $opt in
         mkdir /root/net4all-PR-$(date +%Y%m%d_%H%M%S) && cd "$_" && echo -e "$White Post reboot directory creation --> $Green Complete";
         uname -a > System_Information && echo -e "$White Hostname save --> $Green Complete";
         df -H > Disk_space_used && echo -e "$White Disk space usage --> $Green Complete";
-        mount > Mount_information && echo -e "$White Mount save --> $Green Complete";
+        mount | sort > Mount_information && echo -e "$White Mount save --> $Green Complete";
         cat /etc/hostname > hostname_$(uname -n) && echo -e "$White Save of Hostname --> $Green Complete";
         cat /etc/resolv.conf > resolv.conf && echo -e "$White Save of resolv.conf --> $Green Complete";
         ip addr > ip_addr_before_reboot && echo -e "$White Save of IP config --> $Green Complete";
@@ -152,5 +152,4 @@ case $opt in
         echo "                                                              |                                                                   "
         echo ""
         exit;;
-   esac
-done
+esac
