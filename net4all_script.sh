@@ -51,15 +51,6 @@ display_message () {
     echo -e "$color$2$White"
 }
 
-is_command_exists () {
-    if command -v "$1" &> /dev/null; then
-        return 0
-    else
-        display_message "nok" "$1 command not found on this server"
-        return 1;
-    fi
-}
-
 mkdir_and_rename_if_exists () {
     find /root/ -maxdepth 1 -type d -name "*$1-reboot-data" -exec mv {} {}-backup \;
     if mkdir "/root/$(date +%Y%m%d_%H%M%S)-$1"-reboot-data && cd "$_"; then
@@ -70,139 +61,43 @@ mkdir_and_rename_if_exists () {
     fi
 }
 
-save_uname_a () {
-    if uname -a > system_information; then
-        display_message "ok" "Hostname saved"
+is_command_exists () {
+    if command -v "$1" &> /dev/null; then
+        return 0
     else
-        display_message "nok" "Fail to save hostname"
+        display_message "nok" "$1 command not found on this server"
+        return 1;
     fi
 }
 
-save_disk_space () {
-    if df -H > disk_space_used; then
-        display_message "ok" "Disk space usage saved"
-    else
-        display_message "nok" "Fail to save disk space usage"
-    fi
-}
-
-save_mount_fs () {
-    if mount | sort > mount_information; then
-        display_message "ok" "Mount filesystems saved"
-    else
-        display_message "nok" "Fail to save mount filesystems"
-    fi
-}
-
-save_etc_directory () {
-    if is_command_exists "tar"; then
-        if tar -czf etc_directory.tar.gz /etc 2>/dev/null; then
-            display_message "ok" "/etc directory backuped"
+#$1 : If not empty, check if given parameter is a bash command that exists
+#$2 : Bash command to execute
+#$3 : Message to display
+save_data_if_command_exists () {
+    if [ -z "$1" ] || is_command_exists "$1"; then
+        if eval "$2"; then
+            display_message "ok" "$3"
         else
-            display_message "nok" "Fail to backup /etc directory"
-        fi
-    fi
-}
-
-save_hostname () {
-    if cat /etc/hostname > etc_hostname; then
-        display_message "ok" "/etc/hostname saved"
-    else
-        display_message "nok" "Fail to save /etc/hostname"
-    fi
-}
-
-save_resolv_conf () {
-    if cat /etc/resolv.conf > resolv.conf; then
-        display_message "ok" "File resolv.conf saved"
-    else
-        display_message "nok" "Fail to save file resolv.conf"
-    fi
-}
-
-save_ip_addr () {
-    if ip addr > ip_addr; then
-        display_message "ok" "Ip addr saved"
-    else
-        display_message "nok" "Fail to save ip addr"
-    fi
-}
-
-save_ip_route () {
-    if ip route > ip_route; then
-        display_message "ok" "Ip route saved"
-    else
-        display_message "nok" "Fail to save ip route"
-    fi
-}
-
-save_iptables_v4 () {
-    if is_command_exists "iptables-save"; then
-        if iptables-save > iptables-save_v4 2>/dev/null; then
-            display_message "ok" "Iptables v4 saved"
-        else
-            display_message "nok" "Fail to save iptables v4"
-        fi
-    fi
-}
-
-save_iptables_v6 () {
-    if is_command_exists "ip6tables-save"; then
-        if ip6tables-save > iptables-save_v6; then
-            display_message "ok" "Iptables v6 saved"
-        else
-            display_message "nok" "Fail to save iptables v6"
-        fi
-    fi
-}
-
-save_running_procs () {
-    if ps -efww > running_procs; then
-        display_message "ok" "Running processus (ps -efww) saved"
-    else
-        display_message "nok" "Fail to save running processus (ps -efww)"
-    fi
-    if ps -ef --no-headers | awk '{print $8}' | sort | uniq > running_procs_min; then
-        display_message "ok" "Running processus (ps -ef --no-headers) saved"
-    else
-        display_message "nok" "Fail to save running processus (ps -ef --no-headers)"
-    fi
-}
-
-save_netstat () {
-    if is_command_exists "netstat"; then
-        if netstat -tunlp > netstat_tunlp; then
-            display_message "ok" "Netstat (tunlp) saved"
-        else
-            display_message "nok" "Fail to save netstat (tunlp)"
-        fi
-    fi
-}
-
-save_mysql_vars () {
-    if is_command_exists "mysql"; then
-        if mysql --execute "SHOW variables;" > "mysql_variables"; then
-            display_message "ok" "MySQL variables saved"
-        else
-            display_message "nok" "Fail to save MySQL variables"
+            display_message "nok" "$3"
         fi
     fi
 }
 
 save_data () {
-    save_uname_a
-    save_disk_space
-    save_mount_fs
-    save_etc_directory
-    save_hostname
-    save_resolv_conf
-    save_ip_addr
-    save_ip_route
-    save_iptables_v4
-    save_iptables_v6
-    save_running_procs
-    save_netstat
-    save_mysql_vars
+    save_data_if_command_exists "uname" "uname -a > system_information;" "Save hostname (uname -a)"
+    save_data_if_command_exists "df" "df -H > disk_space_used;" "Save disk space usage"
+    save_data_if_command_exists "mount" "mount | sort > mount_information;" "Save mount filesystems"
+    save_data_if_command_exists "tar" "tar -czf etc_directory.tar.gz /etc 2>/dev/null;" "Backup /etc directory"
+    save_data_if_command_exists "" "cat /etc/hostname > etc_hostname;" "Save file /etc/hostname"
+    save_data_if_command_exists "" "cat /etc/resolv.conf > resolv.conf;" "Save file /etc/resolv.conf"
+    save_data_if_command_exists "ip" "ip addr > ip_addr;" "Save ip addr"
+    save_data_if_command_exists "" "ip route > ip_route;" "Save ip route"
+    save_data_if_command_exists "iptables-save" "iptables-save > iptables-save_v4 2>/dev/null;" "Save iptables v4"
+    save_data_if_command_exists "ip6tables-save" "ip6tables-save > iptables-save_v6;" "Save iptables v6"
+    save_data_if_command_exists "ps" "ps -efww > running_procs;" "Save running processus (ps -efww)"
+    save_data_if_command_exists "awk" "ps -ef --no-headers | awk '{print \$8}' | sort | uniq > running_procs_min;" "Save running processus (ps -ef --no-headers) for diff"
+    save_data_if_command_exists "netstat" "netstat -tunlp > netstat_tunlp;" "Save netstat (tunlp)"
+    save_data_if_command_exists "mysql" "mysql --execute 'SHOW variables;' > mysql_variables" "Save MySQL variables"
 }
 
 pre_reboot_directory=
@@ -225,7 +120,6 @@ display_diff () {
     fi
     echo -e "                                                              |                                                                   \n"
 }
-
 
 
 display_header_and_menu
