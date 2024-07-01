@@ -97,7 +97,9 @@ save_data () {
     save_data_if_command_exists "ps" "ps -efww > running_procs;" "Save running processus (ps -efww)"
     save_data_if_command_exists "awk" "ps -ef --no-headers | awk '{print \$8}' | sort | uniq > running_procs_min;" "Save running processus (ps -ef --no-headers) for diff"
     save_data_if_command_exists "netstat" "netstat -tunlp > netstat_tunlp;" "Save netstat (tunlp)"
+    save_data_if_command_exists "timedatectl" "timedatectl | grep 'Time zone' > timezone;" "Save timezone"
     save_data_if_command_exists "mysql" "mysql --execute 'SHOW variables;' > mysql_variables" "Save MySQL variables"
+    save_data_if_command_exists "psql" "sudo --login --user=postgres psql -c 'show all;' > psql_runtime_vars" "Save PostgreSQL variables"
 }
 
 pre_reboot_directory=
@@ -166,7 +168,9 @@ case $opt in
         display_diff "iptables V6 rules" "iptables-save_v6"
         display_diff "running process" "running_procs_min"
         #display_diff "netstat" "netstat_tunlp" TODO: Find a way to sort netstat output for the diff
+        display_diff "Timezone" "timezone"
         display_diff "MySQL variables" "mysql_variables"
+        display_diff "PostgreSQL variables" "psql_runtime_vars"
         exit;;
 esac
 
