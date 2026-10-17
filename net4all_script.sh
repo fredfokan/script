@@ -3,6 +3,11 @@
 # date: 05.06.2024
 # last update: 14.06.2024
 
+if [ "$EUID" -ne 0 ]; then
+    echo "This script must be run as root (see README)." >&2
+    exit 1
+fi
+
 display_header_and_menu () {
     clear
     echo ""
@@ -52,7 +57,10 @@ display_message () {
 }
 
 mkdir_and_rename_if_exists () {
-    find /root/ -maxdepth 1 -type d -name "*$1-reboot-data" -exec mv {} {}-backup \;
+    find /root/ -maxdepth 1 -type d -name "*$1-reboot-data" | while read -r dir; do
+        rm -rf -- "${dir}-backup"
+        mv -- "$dir" "${dir}-backup"
+    done
     if mkdir "/root/$(date +%Y%m%d_%H%M%S)-$1"-reboot-data && cd "$_"; then
         display_message "ok" "Reboot directory creation"
     else
@@ -93,7 +101,7 @@ save_data () {
     save_data_if_command_exists "ip" "ip addr > ip_addr;" "Save ip addr"
     save_data_if_command_exists "" "ip route > ip_route;" "Save ip route"
     save_data_if_command_exists "iptables-save" "iptables-save > iptables-save_v4 2>/dev/null;" "Save iptables v4"
-    save_data_if_command_exists "ip6tables-save" "ip6tables-save > iptables-save_v6;" "Save iptables v6"
+    save_data_if_command_exists "ip6tables-save" "ip6tables-save > iptables-save_v6 2>/dev/null;" "Save iptables v6"
     save_data_if_command_exists "ps" "ps -efww > running_procs;" "Save running processus (ps -efww)"
     save_data_if_command_exists "awk" "ps -ef --no-headers | awk '{print \$8}' | sort | uniq > running_procs_min;" "Save running processus (ps -ef --no-headers) for diff"
     save_data_if_command_exists "netstat" "netstat -tunlp > netstat_tunlp;" "Save netstat (tunlp)"
